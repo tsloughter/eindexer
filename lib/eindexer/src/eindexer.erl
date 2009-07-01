@@ -73,8 +73,23 @@ handle_call({index, Type, Loc}, _From, State) ->
     {reply, ok, State};
 handle_call({reindex}, _From, State) ->
     {reply, ok, State};
-handle_call({run_query, _Terms}, _From, State) ->
-    {reply, ok, State};
+handle_call({run_query, Query}, _From, State) ->
+    Terms = utils:clean (Query),
+    
+    FinalRankings = lists:foldl (fun (Term, Rankings) ->
+                             [{_, IDF}] = ets:lookup (State#state.idf, Term),
+                             Results = ets:lookup (State#state.doc_term, Term),
+                             lists:foldl (fun ({_, Entry, TF}, NewRankings) ->
+                                                  dict:update (Entry, fun(Old) -> Old + TF*IDF end, TF*IDF, NewRankings)
+                                          end, Rankings, Results)
+                     end, dict:new(), Terms),
+    RankingsList = lists:reverse (lists:keysort (2, dict:to_list (FinalRankings))),
+    
+    %io:format ("Results:~n"),
+    %lists:map (fun({Entry, Ranking}) ->
+    %                   io:format("~s : ~p~n", [Entry, Ranking])
+    %           end, RankingsList),
+    {reply, RankingsList, State};
 handle_call(_Request, _From, State) ->
     Reply = ok,
     {reply, Reply, State}.
