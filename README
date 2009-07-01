@@ -1,0 +1,25 @@
+tristan@kfgyeo:~/Devel/eindexer$ sinan shell                             
+[build] start                                                            
+[build] Building /home/tristan/Devel/eindexer/lib/eindexer/src/utils.erl 
+[build] Building /home/tristan/Devel/eindexer/lib/eindexer/src/text_file_parser.erl                                                               
+[build] /home/tristan/Devel/eindexer/lib/eindexer/src/text_file_parser.erl:10:warning:function parse/0 is unused                                  
+
+[build] Building /home/tristan/Devel/eindexer/lib/eindexer/src/porter.erl
+[build] Building /home/tristan/Devel/eindexer/lib/eindexer/src/conditions.erl
+[build] Building /home/tristan/Devel/eindexer/lib/eindexer/src/eindexer.erl
+[build] Building /home/tristan/Devel/eindexer/lib/eindexer/src/eindexer_sup.erl
+[build] Building /home/tristan/Devel/eindexer/lib/eindexer/src/eindexer_app.erl
+[build] stop
+starting shell ...
+Erlang (BEAM) emulator version 5.6.5 [source] [smp:2] [async-threads:0] [kernel-poll:false]
+
+Eshell V5.6.5  (abort with ^G)
+1> application:start(eindexer).
+ok
+2> eindexer:index(text_files, "/home/tristan/Documents/org-mode").
+ok
+3> eindexer:run_query ("chatyeo languages IIT").
+[{"/home/tristan/Documents/org-mode/bio",2.772588722239781},
+ {"/home/tristan/Documents/org-mode/main.org",
+  1.3862943611198906}]
+4>
