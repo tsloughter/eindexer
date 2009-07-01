@@ -6,7 +6,24 @@
 %%% Created :  1 Jul 2009 by Tristan <tristan@kfgyeo>
 %%%-------------------------------------------------------------------
 -module(utils).
--export([clean/1, generate_file_listing/1]).
+-export([term_frequency/4, create_idf_table/4, clean/1, generate_file_listing/1]).
+
+term_frequency (Entry, Word, TermTable, EntryTermTable) ->
+    ets:insert(TermTable, {Word}),
+    case ets:match(EntryTermTable, {Word, Entry, '$1'}) of
+        [] ->
+            ets:insert(EntryTermTable, {Word, Entry, 1});
+		    [[TF]] ->
+            ets:delete_object(EntryTermTable, {Word, Entry, TF}),
+            ets:insert(EntryTermTable, {Word, Entry, TF+1})
+    end.
+    
+create_idf_table (NumDocs, TermsTable, EntryTermTable, IDFTable) ->
+    ets:foldl (fun ({Term}, _Acc) ->
+                       ets:insert (IDFTable, {Term, math:log(NumDocs / length(ets:lookup(EntryTermTable, Term)))})
+               end, 0, TermsTable),
+    ok.
+
 
 generate_file_listing(Dir) ->
     filelib:fold_files(Dir, ".+", true, fun(F, AccIn) -> [F | AccIn] end, []).

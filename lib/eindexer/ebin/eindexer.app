@@ -9,7 +9,7 @@
               
               conditions,
               porter,
-              text_file_parser,
+              text_file_indexer,
               utils]},
    {registered,[eindexer_sup]},
    {applications, [kernel, stdlib]},

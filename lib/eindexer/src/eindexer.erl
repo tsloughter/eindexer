@@ -68,8 +68,10 @@ init([]) ->
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
 handle_call({index, Type, Loc}, _From, State) ->
-    internal_index (Type, Loc, State),
-    
+    case Type of
+        text_files ->
+            text_file_indexer:index (Loc, State#state.docs, State#state.doc_term, State#state.terms, State#state.idf)
+    end,
     {reply, ok, State};
 handle_call({reindex}, _From, State) ->
     {reply, ok, State};
@@ -132,38 +134,3 @@ code_change(_OldVsn, State, _Extra) ->
 %%--------------------------------------------------------------------
 %%% Internal functions
 %%--------------------------------------------------------------------
-internal_index (text_files, Dir, State) ->
-    Files = utils:generate_file_listing(Dir),    
-    NumDocs = lists:foldl (fun (AbsolutePath, Acc) ->
-                                   ets:insert (State#state.docs, {AbsolutePath, AbsolutePath}),
-                                   case file:read_file(AbsolutePath) of
-                                       {ok, Binary} ->
-                                           insert_words(binary_to_list(Binary), AbsolutePath, State#state.terms, State#state.doc_term),
-                                           Acc+1;
-                                       {error, _Reason} ->
-                                           Acc
-                                   end
-                           end, 0, Files),
-    create_idf_table (NumDocs, State#state.terms, State#state.doc_term, State#state.idf).
-
-insert_words (File, Entry, TermTable, EntryTermTable) ->
-    Words = utils:clean (File),    
-    lists:foreach (fun (Word) ->
-                           term_frequency (Entry, Word, TermTable, EntryTermTable)
-                   end, Words).
-
-term_frequency (Entry, Word, TermTable, EntryTermTable) ->
-    ets:insert(TermTable, {Word}),
-    case ets:match(EntryTermTable, {Word, Entry, '$1'}) of
-        [] ->
-            ets:insert(EntryTermTable, {Word, Entry, 1});
-		    [[TF]] ->
-            ets:delete_object(EntryTermTable, {Word, Entry, TF}),
-            ets:insert(EntryTermTable, {Word, Entry, TF+1})
-    end.
-    
-create_idf_table (NumDocs, TermsTable, EntryTermTable, IDFTable) ->
-    ets:foldl (fun ({Term}, _Acc) ->
-                       ets:insert (IDFTable, {Term, math:log(NumDocs / length(ets:lookup(EntryTermTable, Term)))})
-               end, 0, TermsTable),
-    ok.
