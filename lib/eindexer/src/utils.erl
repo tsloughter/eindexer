@@ -9,8 +9,7 @@
 -export([clean/1, generate_file_listing/1]).
 
 generate_file_listing(Dir) ->
-    {ok, FileListing} = file:list_dir(Dir),
-    FileListing.
+    filelib:fold_files(Dir, ".+", true, fun(F, AccIn) -> [F | AccIn] end, []).
 
 %%% Strips all punctuation from the beginning and end of a word
 strip_all (Word, []) ->

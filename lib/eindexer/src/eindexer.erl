@@ -134,21 +134,15 @@ code_change(_OldVsn, State, _Extra) ->
 %%--------------------------------------------------------------------
 internal_index (text_files, Dir, State) ->
     Files = utils:generate_file_listing(Dir),    
-    NumDocs = lists:foldl (fun (X, Acc) ->
-                                   AbsolutePath = Dir++"/"++X,
-                                   case filelib:is_dir(AbsolutePath) of
-                                       false ->
-                                           ets:insert (State#state.docs, {AbsolutePath, AbsolutePath}),
-                                           case file:read_file(AbsolutePath) of
-                                               {ok, Binary} ->
-                                                   insert_words(binary_to_list(Binary), AbsolutePath, State#state.terms, State#state.doc_term),
-                                                   Acc+1;
-                                               {error, _Reason} ->
-                                                   Acc
-                                           end;
-                                       true ->
+    NumDocs = lists:foldl (fun (AbsolutePath, Acc) ->
+                                   ets:insert (State#state.docs, {AbsolutePath, AbsolutePath}),
+                                   case file:read_file(AbsolutePath) of
+                                       {ok, Binary} ->
+                                           insert_words(binary_to_list(Binary), AbsolutePath, State#state.terms, State#state.doc_term),
+                                           Acc+1;
+                                       {error, _Reason} ->
                                            Acc
-                                   end                           
+                                   end
                            end, 0, Files),
     create_idf_table (NumDocs, State#state.terms, State#state.doc_term, State#state.idf).
 
