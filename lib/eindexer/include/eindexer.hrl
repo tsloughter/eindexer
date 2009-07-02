@@ -1,0 +1,1 @@
+-define(ETSTRIGRAMS, "/home/tristan/Devel/eindexer/trigramsS.tab").

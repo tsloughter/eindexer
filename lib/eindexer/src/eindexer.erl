@@ -16,7 +16,7 @@
 -export([init/1, handle_call/3, handle_cast/2, handle_info/2,
          terminate/2, code_change/3]).
 
--record(state, {directory, docs, terms, doc_term, idf}).
+-record(state, {directory, docs, terms, doc_term, idf, trigrams}).
 
 -define(SERVER, ?MODULE).
 
@@ -35,7 +35,7 @@ start_link() ->
 %%====================================================================
 
 index (Type, Loc) ->
-    gen_server:call(?SERVER, {index, Type, Loc}).
+    gen_server:cast(?SERVER, {index, Type, Loc}).
 
 reindex () ->
     gen_server:call(?SERVER, {reindex}).
@@ -55,8 +55,9 @@ init([]) ->
     Terms = ets:new(terms, []),
     TermDoc = ets:new(doc_term, [bag]),
     IDF = ets:new(idf, []),
+    EtsTrigrams = indexer_trigrams:open(),
     
-    {ok, #state{docs=Docs, terms=Terms, doc_term=TermDoc, idf=IDF}}.
+    {ok, #state{docs=Docs, terms=Terms, doc_term=TermDoc, idf=IDF, trigrams=EtsTrigrams}}.
 
 %%--------------------------------------------------------------------
 %% Function: %% handle_call(Request, From, State) -> {reply, Reply, State} |
@@ -67,16 +68,10 @@ init([]) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling call messages
 %%--------------------------------------------------------------------
-handle_call({index, Type, Loc}, _From, State) ->
-    case Type of
-        text_files ->
-            text_file_indexer:index (Loc, State#state.docs, State#state.doc_term, State#state.terms, State#state.idf)
-    end,
-    {reply, ok, State};
 handle_call({reindex}, _From, State) ->
     {reply, ok, State};
 handle_call({run_query, Query}, _From, State) ->
-    Terms = utils:clean (Query),
+    Terms = utils:clean (Query, State#state.trigrams),
     
     FinalRankings = lists:foldl (fun (Term, Rankings) ->
                              [{_, IDF}] = ets:lookup (State#state.idf, Term),
@@ -102,6 +97,17 @@ handle_call(_Request, _From, State) ->
 %%                                      {stop, Reason, State}
 %% Description: Handling cast messages
 %%--------------------------------------------------------------------
+handle_cast({index, Type, Loc}, State) ->
+    {_, {H, M, S}} = calendar:local_time(),
+    StartSeconds = 360*H + M*60 + S,
+    case Type of
+        text_files ->
+            text_file_indexer:index (Loc, State#state.docs, State#state.doc_term, State#state.terms, State#state.idf, State#state.trigrams)
+    end,
+    {_, {H2, M2, S2}} = calendar:local_time(),
+    FinishSeconds = 360*H2 + M2 *60 + S2,
+    io:format ("~nTime to Index: ~p seconds~n", [FinishSeconds - StartSeconds]),
+    {noreply, State};
 handle_cast(_Msg, State) ->
     {noreply, State}.
 

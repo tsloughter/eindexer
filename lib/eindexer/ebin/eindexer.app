@@ -7,6 +7,7 @@
               eindexer_sup,
               eindexer,
               
+              indexer_trigrams,
               conditions,
               porter,
               text_file_indexer,
