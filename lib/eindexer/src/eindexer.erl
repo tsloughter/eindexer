@@ -51,7 +51,7 @@ run_query (Terms) ->
 %% Description: Initiates the server
 %%--------------------------------------------------------------------
 init([]) ->
-    Docs = ets:new(docs, []),
+    Docs = ets:new(docs, [bag]),
     Terms = ets:new(terms, []),
     TermDoc = ets:new(doc_term, [bag]),
     IDF = ets:new(idf, []),

@@ -6,7 +6,7 @@
 %%% Created :  1 Jul 2009 by Tristan <tristan@kfgyeo>
 %%%-------------------------------------------------------------------
 -module(utils).
--export([term_frequency/4, create_idf_table/4, edoc_clean/2, clean/2, generate_file_listing/1]).
+-export([term_frequency/4, create_idf_table/4, edoc_clean/2, clean/2, edoc_generate_file_listing/1, generate_file_listing/1, app_generate_file_listing/1]).
 
 term_frequency (Entry, Word, TermTable, EntryTermTable) ->
     ets:insert(TermTable, {Word}),
@@ -27,13 +27,19 @@ create_idf_table (NumDocs, TermsTable, EntryTermTable, IDFTable) ->
 generate_file_listing(Dir) ->
     filelib:fold_files(Dir, ".+", true, fun(F, AccIn) -> [F | AccIn] end, []).
 
+edoc_generate_file_listing(Dir) ->
+    filelib:fold_files(Dir, ".+([\.]erl)$", true, fun(F, AccIn) -> [F | AccIn] end, []).
+
+app_generate_file_listing(Dir) ->
+    filelib:fold_files(Dir, ".+([\.]app)$", true, fun(F, AccIn) -> [F | AccIn] end, []).
+
 %%% Strips all punctuation from the beginning and end of a word
-strip_all (Word, []) ->
-    Word;
-strip_all (Word, [H | T]) ->	
-    strip_all(string:strip(Word, both, H), T).
-strip_all(Word) ->
-    strip_all(Word, [$., $,, $;, $*]). 
+%% strip_all (Word, []) ->
+%%     Word;
+%% strip_all (Word, [H | T]) ->	
+%%     strip_all(string:strip(Word, both, H), T).
+%% strip_all(Word) ->
+%%     strip_all(Word, [$., $,, $;, $*]). 
 
 to_lower_case([H|T]) when $A=< H, H=<$Z -> [H+$a-$A|to_lower_case(T)];
 to_lower_case([H|T])                    -> [H|to_lower_case(T)];
@@ -86,20 +92,6 @@ edoc_clean (Lines, EtsTrigrams) ->
                  end, [], Lines),
     %io:format ("~n~p~n", [lists:flatten(FinalTerms)]),
     lists:flatten(FinalTerms).
-
-%split_line(Line)->
-%    Words = string:tokens(Line," \n"),
-%    Cleaned = stop_terms(Words),
-%    [ Word   || Word <- Cleaned].
-%
-
-%% @doc Remove stop words from string
-%% @spec clean(Phrase::string()) -> string()
-%clean(Phrase)->
-%     WordList=split_line(Phrase),
-%     stop_terms(WordList).
-
-%     string:join(Clean," ").
 
 %%%================================================================
 %% An English stop word list from http://snowball.tartarus.org
