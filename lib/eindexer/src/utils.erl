@@ -6,7 +6,7 @@
 %%% Created :  1 Jul 2009 by Tristan <tristan@kfgyeo>
 %%%-------------------------------------------------------------------
 -module(utils).
--export([term_frequency/4, create_idf_table/4, clean/2, generate_file_listing/1]).
+-export([term_frequency/4, create_idf_table/4, edoc_clean/2, clean/2, generate_file_listing/1]).
 
 term_frequency (Entry, Word, TermTable, EntryTermTable) ->
     ets:insert(TermTable, {Word}),
@@ -23,7 +23,6 @@ create_idf_table (NumDocs, TermsTable, EntryTermTable, IDFTable) ->
                        ets:insert (IDFTable, {Term, math:log(NumDocs / length(ets:lookup(EntryTermTable, Term)))})
                end, 0, TermsTable),
     ok.
-
 
 generate_file_listing(Dir) ->
     filelib:fold_files(Dir, ".+", true, fun(F, AccIn) -> [F | AccIn] end, []).
@@ -59,7 +58,7 @@ process_word(_, _) ->
     no.
 
 stem_split_line(Line, EtsTrigrams)->
-    Words = string:tokens(Line," \n"),    
+    Words = string:tokens(Line," \n"),
     lists:foldl (fun (X, Acc) -> 
                          case process_word(X, EtsTrigrams) of
                              {yes, Word} ->
@@ -73,6 +72,20 @@ stem_split_line(Line, EtsTrigrams)->
 %% @spec clean_stems(Phrase::string()) -> string()
 clean (Phrase, EtsTrigrams)->
     stem_split_line(Phrase, EtsTrigrams).
+
+edoc_clean (Lines, EtsTrigrams) ->
+    FinalTerms = lists:foldl (fun ({_, _, _, Comments}, Acc) ->
+                         [lists:foldl (fun (Line, Acc2) ->
+                                              case Line of
+                                                  "% @doc " ++ Terms ->
+                                                      [stem_split_line (Terms, EtsTrigrams) | Acc2];
+                                                  _ ->
+                                                      Acc2
+                                              end
+                                      end, [], Comments) | Acc]
+                 end, [], Lines),
+    %io:format ("~n~p~n", [lists:flatten(FinalTerms)]),
+    lists:flatten(FinalTerms).
 
 %split_line(Line)->
 %    Words = string:tokens(Line," \n"),

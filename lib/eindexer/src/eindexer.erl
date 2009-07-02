@@ -74,12 +74,16 @@ handle_call({run_query, Query}, _From, State) ->
     Terms = utils:clean (Query, State#state.trigrams),
     
     FinalRankings = lists:foldl (fun (Term, Rankings) ->
-                             [{_, IDF}] = ets:lookup (State#state.idf, Term),
-                             Results = ets:lookup (State#state.doc_term, Term),
-                             lists:foldl (fun ({_, Entry, TF}, NewRankings) ->
-                                                  dict:update (Entry, fun(Old) -> Old + TF*IDF end, TF*IDF, NewRankings)
-                                          end, Rankings, Results)
-                     end, dict:new(), Terms),
+                                         case ets:lookup (State#state.idf, Term) of
+                                             [{_, IDF}] ->
+                                                 Results = ets:lookup (State#state.doc_term, Term),
+                                                 lists:foldl (fun ({_, Entry, TF}, NewRankings) ->
+                                                                      dict:update (Entry, fun(Old) -> Old + TF*IDF end, TF*IDF, NewRankings)
+                                                              end, Rankings, Results);
+                                             [] ->
+                                                 Rankings
+                                         end
+                                 end, dict:new(), Terms),
     RankingsList = lists:reverse (lists:keysort (2, dict:to_list (FinalRankings))),
     
     %io:format ("Results:~n"),
@@ -102,7 +106,9 @@ handle_cast({index, Type, Loc}, State) ->
     StartSeconds = 360*H + M*60 + S,
     case Type of
         text_files ->
-            text_file_indexer:index (Loc, State#state.docs, State#state.doc_term, State#state.terms, State#state.idf, State#state.trigrams)
+            text_file_indexer:index (Loc, State#state.docs, State#state.doc_term, State#state.terms, State#state.idf, State#state.trigrams);
+        edocs ->
+            edoc_indexer:index (Loc, State#state.docs, State#state.doc_term, State#state.terms, State#state.idf, State#state.trigrams)
     end,
     {_, {H2, M2, S2}} = calendar:local_time(),
     FinishSeconds = 360*H2 + M2 *60 + S2,
