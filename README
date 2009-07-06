@@ -1,11 +1,11 @@
-tristan@kfgyeo:~/Devel/eindexer$ sinan shell                             
-[build] start                                                            
-[build] Building /home/tristan/Devel/eindexer/lib/eindexer/src/utils.erl 
-[build] Building /home/tristan/Devel/eindexer/lib/eindexer/src/text_file_parser.erl                                                               
-[build] /home/tristan/Devel/eindexer/lib/eindexer/src/text_file_parser.erl:10:warning:function parse/0 is unused                                  
-
+tristan@kfgyeo:~/Devel/eindexer$ sinan shell
+[build] start
+[build] Building /home/tristan/Devel/eindexer/lib/eindexer/src/utils.erl
+[build] Building /home/tristan/Devel/eindexer/lib/eindexer/src/text_file_indexer.erl
 [build] Building /home/tristan/Devel/eindexer/lib/eindexer/src/porter.erl
 [build] Building /home/tristan/Devel/eindexer/lib/eindexer/src/conditions.erl
+[build] Building /home/tristan/Devel/eindexer/lib/eindexer/src/indexer_trigrams.erl
+[build] Building /home/tristan/Devel/eindexer/lib/eindexer/src/edoc_indexer.erl
 [build] Building /home/tristan/Devel/eindexer/lib/eindexer/src/eindexer.erl
 [build] Building /home/tristan/Devel/eindexer/lib/eindexer/src/eindexer_sup.erl
 [build] Building /home/tristan/Devel/eindexer/lib/eindexer/src/eindexer_app.erl
@@ -16,10 +16,15 @@ Erlang (BEAM) emulator version 5.6.5 [source] [smp:2] [async-threads:0] [kernel-
 Eshell V5.6.5  (abort with ^G)
 1> application:start(eindexer).
 ok
-2> eindexer:index(text_files, "/home/tristan/Documents/org-mode").
+2> eindexer:index(edocs, "/usr/local/erlware/lib/").
 ok
-3> eindexer:run_query ("chatyeo languages IIT").
-[{"/home/tristan/Documents/org-mode/bio",2.772588722239781},
- {"/home/tristan/Documents/org-mode/main.org",
-  1.3862943611198906}]
+3>
+Time to Index: 10 seconds
+
+3> eindexer:run_query("sinan").
+[{faxien,{"0.42.1.0",17.214097626075695}},
+ {ewrepo,{"0.18.8.0",2.151762203259462}},
+ {sinan,{"0.16.0.4",6.455286609778385}},
+ {epkg,{"0.14.0.1",17.214097626075695}},
+ {sinan_web_api,{"0.1.0.6",2.151762203259462}}]
 4>
