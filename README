@@ -1,3 +1,9 @@
+*** FIRST***
+
+Edit eindexer/lib/eindexer/include/eindexer.hrl and set ETSTRIGRAMS to the proper path.
+
+*** Example ***
+
 tristan@kfgyeo:~/Devel/eindexer$ sinan shell
 [build] start
 [build] Building /home/tristan/Devel/eindexer/lib/eindexer/src/utils.erl
