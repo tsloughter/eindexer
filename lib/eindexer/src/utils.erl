@@ -81,12 +81,20 @@ clean (Phrase, EtsTrigrams)->
 
 edoc_clean (Lines, EtsTrigrams) ->
     FinalTerms = lists:foldl (fun ({_, _, _, Comments}, Acc) ->
-                         [lists:foldl (fun (Line, Acc2) ->
+                         [lists:foldl (fun (Line, Acc2) ->      
                                               case Line of
+                                                  "% -*- " ++ _Terms ->
+                                                      Acc2;
+                                                  "%% " ++ _Terms ->
+                                                      Acc2;
+                                                  "% @spec " ++ _Terms ->
+                                                      Acc2;
+                                                  "% @end" ++ _Terms ->
+                                                      Acc2;
                                                   "% @doc " ++ Terms ->
                                                       [stem_split_line (Terms, EtsTrigrams) | Acc2];
-                                                  _ ->
-                                                      Acc2
+                                                  Terms ->
+                                                      [stem_split_line (Terms, EtsTrigrams) | Acc2]
                                               end
                                       end, [], Comments) | Acc]
                  end, [], Lines),
