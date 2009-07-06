@@ -78,7 +78,7 @@ handle_call({run_query, Query}, _From, State) ->
                                              [{_, IDF}] ->
                                                  Results = ets:lookup (State#state.doc_term, Term),
                                                  lists:foldl (fun ({_, Entry, TF}, NewRankings) ->
-                                                                      dict:update (Entry, fun(Old) -> Old + TF*IDF end, TF*IDF, NewRankings)
+                                                                      dict:update (Entry, fun({Vsn, Old}) -> {Vsn, Old + TF*IDF} end, {hd(hd(ets:match(State#state.docs, {application, Entry, '_', '$1', '_'}))), TF*IDF}, NewRankings)
                                                               end, Rankings, Results);
                                              [] ->
                                                  Rankings

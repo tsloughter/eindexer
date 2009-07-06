@@ -23,7 +23,7 @@ index (Dir, Docs, DocTermTable, TermsTable, IDFTable, EtsTrigram) ->
                                    ets:insert (Docs, {application, Name, Description, Version, App}),
                                    lists:map (fun (AbsolutePath) ->                    
                                                       Lines = edoc:read_comments(AbsolutePath),
-                                                      edoc_insert_words(Lines, AbsolutePath, TermsTable, DocTermTable, EtsTrigram)
+                                                      edoc_insert_words(Lines, Name, TermsTable, DocTermTable, EtsTrigram)
                                               end, Files),
                                    Acc+1         
                            end, 0, Apps),
