@@ -74,14 +74,22 @@ handle_call({run_query, Query}, _From, State) ->
     Terms = utils:clean (Query, State#state.trigrams),
     
     FinalRankings = lists:foldl (fun (Term, Rankings) ->
-                                         case ets:lookup (State#state.idf, Term) of
+                                         NewRankings = case ets:lookup (State#state.idf, Term) of
                                              [{_, IDF}] ->
-                                                 Results = ets:lookup (State#state.doc_term, Term),
+                                                 Results = ets:lookup (State#state.doc_term, Term),  
                                                  lists:foldl (fun ({_, Entry, TF}, NewRankings) ->
-                                                                      dict:update (Entry, fun({Vsn, Old}) -> {Vsn, Old + TF*IDF} end, {hd(hd(ets:match(State#state.docs, {application, Entry, '_', '$1', '_'}))), TF*IDF}, NewRankings)
+                                                                      dict:update (Entry, fun({Old, Vsn}) -> {Old + TF*IDF, Vsn} end, {TF*IDF, hd(hd(ets:match(State#state.docs, {application, Entry, '_', '$1', '_'})))}, NewRankings)
                                                               end, Rankings, Results);
                                              [] ->
                                                  Rankings
+                                         end,
+                                         PossibleApp = list_to_atom(binary_to_list(Term)),
+                                         Results2 = ets:match (State#state.docs, {application, PossibleApp, '_', '$1', '_'}),
+                                         case Results2 of
+                                             [] ->
+                                                 NewRankings;
+                                             [[Vsn]] ->
+                                                 dict:update (PossibleApp, fun({Old, _Vsn}) -> {Old + 100, Vsn} end, {100, Vsn}, NewRankings)
                                          end
                                  end, dict:new(), Terms),
     RankingsList = lists:reverse (lists:keysort (2, dict:to_list (FinalRankings))),
