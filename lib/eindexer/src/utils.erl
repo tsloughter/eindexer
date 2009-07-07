@@ -31,7 +31,7 @@ edoc_generate_file_listing(Dir) ->
     filelib:fold_files(Dir, ".+([\.]erl)$", true, fun(F, AccIn) -> [F | AccIn] end, []).
 
 get_overview_file(Dir) ->
-    filelib:fold_files(Dir, "overview.edoc)", true, fun(F, AccIn) -> [F | AccIn] end, []).
+    filelib:fold_files(Dir, "(overview.edoc)$", true, fun(F, AccIn) -> [F | AccIn] end, []).
 
 app_generate_file_listing(Dir) ->
     filelib:fold_files(Dir, ".+([\.]app)$", true, fun(F, AccIn) -> [F | AccIn] end, []).

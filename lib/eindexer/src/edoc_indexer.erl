@@ -19,10 +19,14 @@ index (Dir, Docs, DocTermTable, TermsTable, IDFTable, EtsTrigram) ->
                                    text_insert_words(Description, Name, TermsTable, DocTermTable, EtsTrigram),
                                    Tokens = string:tokens(App, "/"),                                
                                    Path = "/"++filename:join(lists:sublist(Tokens, length(Tokens)-2)),
-                                   Overview = utils:get_overview_file(Path),
-                                   {ok, Binary} = file:read_file(Overview),
-                                   text_insert_words(binary_to_list(Binary), Name, TermsTable, DocTermTable, EtsTrigram),
-
+                                   case utils:get_overview_file(Path) of
+                                       [] ->
+                                           no_overview;
+                                       [Overview] ->
+                                           {ok, Binary} = file:read_file(Overview),
+                                           text_insert_words(binary_to_list(Binary), Name, TermsTable, DocTermTable, EtsTrigram)
+                                   end,
+                                   
                                    Files = utils:edoc_generate_file_listing(Path),
                                    ets:insert (Docs, {application, Name, Description, Version, App}),
                                    lists:map (fun (AbsolutePath) ->                    
