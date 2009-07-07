@@ -6,7 +6,7 @@
 %%% Created :  1 Jul 2009 by Tristan <tristan@kfgyeo>
 %%%-------------------------------------------------------------------
 -module(utils).
--export([term_frequency/4, create_idf_table/4, edoc_clean/2, clean/2, edoc_generate_file_listing/1, generate_file_listing/1, app_generate_file_listing/1]).
+-export([term_frequency/4, create_idf_table/4, edoc_clean/2, clean/2, edoc_generate_file_listing/1, generate_file_listing/1, get_overview_file/1, app_generate_file_listing/1]).
 
 term_frequency (Entry, Word, TermTable, EntryTermTable) ->
     ets:insert(TermTable, {Word}),
@@ -29,6 +29,9 @@ generate_file_listing(Dir) ->
 
 edoc_generate_file_listing(Dir) ->
     filelib:fold_files(Dir, ".+([\.]erl)$", true, fun(F, AccIn) -> [F | AccIn] end, []).
+
+get_overview_file(Dir) ->
+    filelib:fold_files(Dir, "overview.edoc)", true, fun(F, AccIn) -> [F | AccIn] end, []).
 
 app_generate_file_listing(Dir) ->
     filelib:fold_files(Dir, ".+([\.]app)$", true, fun(F, AccIn) -> [F | AccIn] end, []).

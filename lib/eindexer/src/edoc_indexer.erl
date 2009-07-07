@@ -16,9 +16,13 @@ index (Dir, Docs, DocTermTable, TermsTable, IDFTable, EtsTrigram) ->
                                    List = element(3, Terms),
                                    {description, Description} = lists:nth(1, List),
                                    {vsn, Version} = lists:nth(2, List),
-                                   desc_insert_words(Description, Name, TermsTable, DocTermTable, EtsTrigram),
+                                   text_insert_words(Description, Name, TermsTable, DocTermTable, EtsTrigram),
                                    Tokens = string:tokens(App, "/"),                                
                                    Path = "/"++filename:join(lists:sublist(Tokens, length(Tokens)-2)),
+                                   Overview = utils:get_overview_file(Path),
+                                   {ok, Binary} = file:read_file(Overview),
+                                   text_insert_words(binary_to_list(Binary), Name, TermsTable, DocTermTable, EtsTrigram),
+
                                    Files = utils:edoc_generate_file_listing(Path),
                                    ets:insert (Docs, {application, Name, Description, Version, App}),
                                    lists:map (fun (AbsolutePath) ->                    
@@ -36,7 +40,7 @@ edoc_insert_words (Lines, Entry, TermTable, EntryTermTable, EtsTrigram) ->
                            utils:term_frequency (Entry, Word, TermTable, EntryTermTable)
                    end, Words).
 
-desc_insert_words (Description, Entry, TermTable, EntryTermTable, EtsTrigram) ->
+text_insert_words (Description, Entry, TermTable, EntryTermTable, EtsTrigram) ->
     Words = utils:clean (Description, EtsTrigram),    
     lists:foreach (fun (Word) ->
                            utils:term_frequency (Entry, Word, TermTable, EntryTermTable)
