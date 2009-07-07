@@ -1,8 +1,13 @@
-*** FIRST ***
+About:
+
+eindexer is an ad-hoc text indexing engine written entirely in Erlang. It was originally designed to index edoc files 
+for erlware, but is capable of being used as a general purpose text retrieval engine.
+
+Setup:
 
 Edit eindexer/lib/eindexer/include/eindexer.hrl and set ETSTRIGRAMS to the proper path.
 
-*** Example ***
+Running:
 
 tristan@kfgyeo:~/Devel/eindexer$ sinan shell
 [build] start
